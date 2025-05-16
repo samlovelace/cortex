@@ -3,6 +3,7 @@
 
 #include "Logger.hpp"
 #include "ConfigManager.hpp"
+#include "llama.h"
 
 int main()
 {
@@ -20,4 +21,9 @@ int main()
     }
 
     LOGD << "Model Path: " << modelPath;
+
+    llama_backend_init(); 
+
+    LOGD << "LLaMa backend initialized!"; 
+    llama_backend_free(); 
 }
