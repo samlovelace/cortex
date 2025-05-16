@@ -25,6 +25,7 @@ target_link_libraries(${PROJECT_NAME} yaml-cpp)
 
 include_directories(${PROJECT_NAME} 
   ${CMAKE_CURRENT_LIST_DIR}/include
+  ${CMAKE_CURRENT_LIST_DIR}/dependencies/plog/plog-master/include
 )
 
 install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
