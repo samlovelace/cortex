@@ -1,7 +1,8 @@
 
 #include "CommandHandler.h"
+#include "plog/Log.h"
 
-CommandHandler::CommandHandler(std::shared_ptr<InferenceEngine> anEngine) : mEngine(anEngine)
+CommandHandler::CommandHandler(std::shared_ptr<InferenceEngine> anEngine) : mEngine(anEngine), mPromptRcvd(false)
 {
 
 }
@@ -25,5 +26,9 @@ bool CommandHandler::init()
 
 void CommandHandler::promptCallback(const std_msgs::msg::String::SharedPtr aMsg)
 {
-    mEngine->generate(aMsg->data); 
+    if(!mPromptRcvd)
+    {
+        mPromptRcvd = true; 
+        mEngine->generate(aMsg->data); 
+    }
 }

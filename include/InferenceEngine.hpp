@@ -8,7 +8,7 @@ class InferenceEngine
 {
     
 public:
-    virtual bool init() = 0; 
+    virtual bool init(const std::string& aModelPath) = 0; 
     virtual std::string generate(const std::string& aPrompt) = 0;
     virtual ~InferenceEngine() = default;
 };

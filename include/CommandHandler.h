@@ -21,6 +21,7 @@ public:
 private:
 
     std::shared_ptr<InferenceEngine> mEngine; 
+    bool mPromptRcvd; 
    
 };
 #endif //COMMANDHANDLER_H

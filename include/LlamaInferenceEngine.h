@@ -5,6 +5,7 @@
  
 #include "InferenceEngine.hpp"
 #include "llama.h"
+#include "common.h"
  
 class LlamaInferenceEngine : public InferenceEngine
 { 
@@ -12,12 +13,34 @@ public:
     LlamaInferenceEngine();
     ~LlamaInferenceEngine();
 
-    bool init() override; 
+    bool init(const std::string& aModelPath) override; 
     std::string generate(const std::string& aPrompt) override; 
+
+    void addPrompt(const std::string& message, const std::string& role);
 
 private:
 
-    std::shared_ptr<llama_model> mModel; 
+    llama_model* mModel;
+    llama_context* mContext; 
+    llama_sampler* mSampler;
+    llama_batch mBatch;
+    llama_token mCurrToken;
+
+    // stores the complete response for the given query
+    std::string mResponse = "";
+    
+    // container to store user/assistant messages in the chat
+    std::vector<llama_chat_message> mMessages;
+    // stores the string generated after applying
+    // the chat-template to all messages in `_messages`
+    std::vector<char> mFormattedMessages;
+    // stores the tokens for the last query
+    // appended to `_messages`
+    std::vector<llama_token> mPromptTokens;
+    int mPrevLen = 0;
+
+    void startCompletion(const std::string& query);
+    std::string completionLoop();
 
    
 };
