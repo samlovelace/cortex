@@ -3,27 +3,37 @@
 
 #include "Logger.hpp"
 #include "ConfigManager.hpp"
+#include "CommandHandler.h"
 #include "llama.h"
+#include "EngineFactory.hpp"
+
 
 int main()
 {
+    rclcpp::init(0, nullptr); 
     createLogger(); 
     std::string package_path = ament_index_cpp::get_package_share_directory("cortex");
     std::string config_path = package_path + "/configuration/config.yaml";
 
     ConfigManager::get().load(config_path); 
-    
-    std::string modelPath; 
-    if(!ConfigManager::get().getConfig<std::string>("model", modelPath)) 
+
+    std::string engineType; 
+    if(!ConfigManager::get().getConfig("engine", engineType))
     {
-        LOGE << "Invalid Configuration";
+        LOGE << "Invalid Inference Engine Configuration"; 
         return 0; 
     }
 
-    LOGD << "Model Path: " << modelPath;
+    auto engine = EngineFactory::create(engineType);
+    auto ch = CommandHandler(engine); 
 
-    llama_backend_init(); 
+    engine->init(); 
+    ch.init(); 
 
-    LOGD << "LLaMa backend initialized!"; 
-    llama_backend_free(); 
+    while(true)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000)); 
+    }
+
+    rclcpp::shutdown(); 
 }

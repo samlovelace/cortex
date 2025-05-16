@@ -14,6 +14,8 @@ find_package(yaml-cpp REQUIRED)
 add_subdirectory(dependencies/llama-cpp)
 
 set(SOURCES
+  ${CMAKE_CURRENT_LIST_DIR}/src/CommandHandler.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/src/LlamaInferenceEngine.cpp
   ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
 )
 
