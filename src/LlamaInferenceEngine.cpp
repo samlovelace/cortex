@@ -72,13 +72,14 @@ std::string LlamaInferenceEngine::generate(const std::string& aPrompt)
     startCompletion(aPrompt);
 
     std::string predictedToken;
+    std::stringstream fullResponse; 
     while ((predictedToken = completionLoop()) != "[EOG]") {
-        LOGD << predictedToken;
+        fullResponse << predictedToken;
         fflush(stdout);
     }
     //std::cout << '\n';
-
-    return ""; 
+    //LOGD << fullResponse.str(); 
+    return fullResponse.str(); 
 }
 
 void LlamaInferenceEngine::startCompletion(const std::string& query) 

@@ -19,6 +19,7 @@ bool CommandHandler::init()
                                                                             this, 
                                                                             std::placeholders::_1)); 
 
+    RosTopicManager::getInstance()->createPublisher<std_msgs::msg::String>("/cortex/response");
 
     RosTopicManager::getInstance()->spinNode(); 
     return true; 
@@ -29,6 +30,11 @@ void CommandHandler::promptCallback(const std_msgs::msg::String::SharedPtr aMsg)
     if(!mPromptRcvd)
     {
         mPromptRcvd = true; 
-        mEngine->generate(aMsg->data); 
+        std::string response = mEngine->generate(aMsg->data); 
+
+        std_msgs::msg::String toSend; 
+        toSend.set__data(response); 
+
+        RosTopicManager::getInstance()->publishMessage<std_msgs::msg::String>("/cortex/response", toSend);
     }
 }
