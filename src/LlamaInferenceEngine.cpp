@@ -33,6 +33,8 @@ bool LlamaInferenceEngine::init(const std::string& aModelPath)
         throw std::runtime_error("load_model() failed");
     }
 
+    LOGD << "Successfully loaded model from " << aModelPath; 
+
     // create an instance of llama_context
     llama_context_params ctxParams = llama_context_default_params();
     ctxParams.n_ctx                = 0;    // take context size from the model GGUF file
@@ -60,6 +62,8 @@ bool LlamaInferenceEngine::init(const std::string& aModelPath)
     int32_t n_seq_max   = 1;      // e.g. single sequence context
 
     llama_batch batch = llama_batch_init(n_tokens, embd, n_seq_max);
+
+    LOGD << "LlaMa Inference Engine initialized successfully!"; 
     
     return true; 
 }
