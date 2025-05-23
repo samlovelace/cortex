@@ -21,6 +21,8 @@ LlamaInferenceEngine::~LlamaInferenceEngine()
 
 bool LlamaInferenceEngine::init(const std::string& aModelPath)
 {
+    llama_log_set(quietLogger, nullptr); 
+
     // TODO: get from config maybe? 
     float temperature = 1.0f;
     float minP = 0.05f;
@@ -90,6 +92,8 @@ std::string LlamaInferenceEngine::generate(const std::string& aPrompt)
 void LlamaInferenceEngine::startCompletion(const std::string& query) 
 {
     addPrompt(query, "user");
+
+
 
     // apply the chat-template
     const char* tmpl = llama_model_chat_template(mModel, nullptr);
