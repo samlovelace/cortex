@@ -66,20 +66,21 @@ bool LlamaInferenceEngine::init(const std::string& aModelPath)
 
 std::string LlamaInferenceEngine::generate(const std::string& aPrompt)
 {
+    setGeneratingResponse(true); 
     LOGD << "Receieved a prompt to input to model!"; 
     LOGD << "Prompt: " << aPrompt;
     
     startCompletion(aPrompt);
 
     std::string predictedToken;
-    std::stringstream ss; 
+    std::stringstream fullResponse; 
     while ((predictedToken = completionLoop()) != "[EOG]") {
-        ss << predictedToken;
-        //fflush(stdout);
+        fullResponse << predictedToken;
+        fflush(stdout);
     }
 
-    LOGD << "Response: " << ss.str(); 
-    return ""; 
+    setGeneratingResponse(false);  
+    return fullResponse.str(); 
 }
 
 void LlamaInferenceEngine::startCompletion(const std::string& query) 
