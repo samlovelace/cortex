@@ -1,3 +1,5 @@
 engine: llama-cpp
 path: /home/sam/models
 model: Mistral-7B-Instruct-v0.3.Q3_K_M.gguf
+
+promptHeader: Answer in one word.

@@ -13,7 +13,7 @@ public:
     LlamaInferenceEngine();
     ~LlamaInferenceEngine();
 
-    bool init(const std::string& aModelPath) override; 
+    bool init(const std::string& aModelPath, const std::string& aPromptHeader) override; 
     std::string generate(const std::string& aPrompt) override; 
 
     void addPrompt(const std::string& message, const std::string& role);

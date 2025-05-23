@@ -37,11 +37,20 @@ int main()
         return 0; 
     }
 
+    std::string promptHeader; 
+    if(!ConfigManager::get().getConfig("promptHeader", promptHeader))
+    {
+        LOGE << "Invalid prompt header"; 
+        return 0; 
+    }
+
     rclcpp::init(0, nullptr); 
     auto engine = EngineFactory::create(engineType);
     auto ch = CommandHandler(engine); 
 
-    engine->init(modelPath + "/" +  modelName); 
+    std::string fullModelPath = modelPath + "/" + modelName; 
+
+    engine->init(fullModelPath, promptHeader); 
     ch.init(); 
 
     while(true)

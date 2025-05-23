@@ -19,8 +19,9 @@ LlamaInferenceEngine::~LlamaInferenceEngine()
     llama_backend_free();
 }
 
-bool LlamaInferenceEngine::init(const std::string& aModelPath)
+bool LlamaInferenceEngine::init(const std::string& aModelPath, const std::string& aPromptHeader)
 {
+    mPromptHeader = aPromptHeader; 
     llama_log_set(quietLogger, nullptr); 
 
     // TODO: get from config maybe? 
@@ -74,9 +75,10 @@ std::string LlamaInferenceEngine::generate(const std::string& aPrompt)
 {
     setGeneratingResponse(true); 
     LOGD << "Receieved a prompt to input to model!"; 
-    LOGD << "Prompt: " << aPrompt;
+    std::string fullPrompt = mPromptHeader + aPrompt; 
+    LOGD << "Prompt: " << fullPrompt;
     
-    startCompletion(aPrompt);
+    startCompletion(fullPrompt);
 
     std::string predictedToken;
     std::stringstream fullResponse; 
