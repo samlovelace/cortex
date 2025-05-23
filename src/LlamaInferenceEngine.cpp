@@ -2,6 +2,7 @@
 #include "LlamaInferenceEngine.h"
 #include "plog/Log.h"
 #include <cstring>
+#include <iostream> 
 
 // A no-op logger
 void quietLogger(enum ggml_log_level level, const char* text, void* user_data) 
@@ -76,15 +77,17 @@ std::string LlamaInferenceEngine::generate(const std::string& aPrompt)
     setGeneratingResponse(true); 
     LOGD << "Receieved a prompt to input to model!"; 
     std::string fullPrompt = mPromptHeader + aPrompt; 
-    LOGD << "Prompt: " << fullPrompt;
+    LOGD << "Task: " << aPrompt;
     
     startCompletion(fullPrompt);
 
+    LOGD << "Generating Task Plan..."; 
     std::string predictedToken;
     std::stringstream fullResponse; 
-    while ((predictedToken = completionLoop()) != "[EOG]") {
+    while ((predictedToken = completionLoop()) != "[EOG]") 
+    {
         fullResponse << predictedToken;
-        fflush(stdout);
+        //fflush(stdout);
     }
 
     setGeneratingResponse(false);  
@@ -94,8 +97,6 @@ std::string LlamaInferenceEngine::generate(const std::string& aPrompt)
 void LlamaInferenceEngine::startCompletion(const std::string& query) 
 {
     addPrompt(query, "user");
-
-
 
     // apply the chat-template
     const char* tmpl = llama_model_chat_template(mModel, nullptr);

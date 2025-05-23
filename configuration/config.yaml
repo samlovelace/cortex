@@ -2,4 +2,30 @@ engine: llama-cpp
 path: /home/sam/models
 model: Mistral-7B-Instruct-v0.3.Q3_K_M.gguf
 
-promptHeader: Answer in one word.
+promptHeader: |-
+  You are a robot task planner. Generate a sequence of steps using only primitive actions:
+
+  Format your response as a numbered list of actions in the format:
+  <step_number>. <primitive>(<argument>)
+
+  Example:
+  Task: Pick up the red box and place it on the table.
+  Plan:
+  1. find_object(red box)
+  2. move_to(red box)
+  3. pick_up(red box)
+  5. find_object(table)
+  4. move_to(table)
+  5. place_on(red box, table)
+
+  Example:
+  Task: Pick up the blue cone and put it in the yellow bin.
+  Plan:
+  1. find_object(blue cone)
+  2. move_to(blue cone)
+  3. pick_up(blue_cone)
+  5. find_object(yellow bin)
+  4. move_to(yellow bin)
+  5. place_on(blue cone, yellow bin)
+
+  Task:
