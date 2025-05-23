@@ -66,6 +66,7 @@ bool LlamaInferenceEngine::init(const std::string& aModelPath)
 
 std::string LlamaInferenceEngine::generate(const std::string& aPrompt)
 {
+    setGeneratingResponse(true); 
     LOGD << "Receieved a prompt to input to model!"; 
     LOGD << "Prompt: " << aPrompt;
     
@@ -78,7 +79,8 @@ std::string LlamaInferenceEngine::generate(const std::string& aPrompt)
         fflush(stdout);
     }
     //std::cout << '\n';
-    //LOGD << fullResponse.str(); 
+    //LOGD << fullResponse.str();
+    setGeneratingResponse(false);  
     return fullResponse.str(); 
 }
 

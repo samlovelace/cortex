@@ -27,14 +27,15 @@ bool CommandHandler::init()
 
 void CommandHandler::promptCallback(const std_msgs::msg::String::SharedPtr aMsg)
 {
-    if(!mPromptRcvd)
+    if(mEngine->isGenerating())
     {
-        mPromptRcvd = true; 
-        std::string response = mEngine->generate(aMsg->data); 
-
-        std_msgs::msg::String toSend; 
-        toSend.set__data(response); 
-
-        RosTopicManager::getInstance()->publishMessage<std_msgs::msg::String>("/cortex/response", toSend);
+        return ; 
     }
+
+    std::string response = mEngine->generate(aMsg->data); 
+
+    std_msgs::msg::String toSend; 
+    toSend.set__data(response); 
+
+    RosTopicManager::getInstance()->publishMessage<std_msgs::msg::String>("/cortex/response", toSend);
 }
