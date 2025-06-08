@@ -136,6 +136,10 @@ std::string LlamaInferenceEngine::completionLoop() {
         LOGE << "context size exceeded"; 
         exit(0);
     }
+
+    assert(mContext != nullptr);
+    assert(mBatch.n_tokens > 0);
+
     // run the model
     if (llama_decode(mContext, mBatch) < 0) {
         throw std::runtime_error("llama_decode() failed");

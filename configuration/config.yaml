@@ -1,6 +1,13 @@
 engine: llama-cpp
 path: /home/sam/models
-model: Mistral-7B-Instruct-v0.3.Q3_K_M.gguf
+model: tinyllama-1.1b-chat-v1.0.Q5_K_M.gguf
+maxPlanningAttempts: 3
+
+primitiveActions:
+  - find_object(object)
+  - move_to(location)
+  - pick(object)
+  - place(object)
 
 promptHeader: |-
   You are a robot task planner. Generate a sequence of steps using only primitive actions:

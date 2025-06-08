@@ -6,22 +6,20 @@
 #include "RosTopicManager.hpp"
 #include "InferenceEngine.hpp"
 #include "std_msgs/msg/string.hpp"
-
+#include "TaskPlanner.h"
  
 class CommandHandler 
 { 
 public:
-    CommandHandler(std::shared_ptr<InferenceEngine> anEngine);
+    CommandHandler(std::shared_ptr<TaskPlanner> aPlanner);
     ~CommandHandler();
 
     bool init(); 
-
     void promptCallback(const std_msgs::msg::String::SharedPtr aMsg); 
 
 private:
 
-    std::shared_ptr<InferenceEngine> mEngine; 
-    bool mPromptRcvd; 
+    std::shared_ptr<TaskPlanner> mPlanner; 
    
 };
 #endif //COMMANDHANDLER_H

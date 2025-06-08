@@ -2,7 +2,7 @@
 #include "CommandHandler.h"
 #include "plog/Log.h"
 
-CommandHandler::CommandHandler(std::shared_ptr<InferenceEngine> anEngine) : mEngine(anEngine), mPromptRcvd(false)
+CommandHandler::CommandHandler(std::shared_ptr<TaskPlanner> aPlanner) : mPlanner(aPlanner)
 {
 
 }
@@ -27,19 +27,11 @@ bool CommandHandler::init()
 
 void CommandHandler::promptCallback(const std_msgs::msg::String::SharedPtr aMsg)
 {
-    if(mEngine->isGenerating())
-    {
-        return ; 
-    }
+    // TODO: maybe i need something like this in the future ? 
+    // if(mPlanner->isPlanning())
+    // {
+    //     return ; 
+    // }
 
-    auto start = std::chrono::steady_clock::now(); 
-    std::string response = mEngine->generate(aMsg->data); 
-    auto end = std::chrono::steady_clock::now(); 
-
-    LOGD << "Generated Task Plan in " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " secs!"; 
-
-    std_msgs::msg::String toSend; 
-    toSend.set__data(response); 
-
-    RosTopicManager::getInstance()->publishMessage<std_msgs::msg::String>("/cortex/response", toSend);
+    mPlanner->plan(aMsg->data); 
 }
