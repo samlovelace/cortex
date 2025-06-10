@@ -17,6 +17,15 @@ LlamaInferenceEngine::LlamaInferenceEngine()
 
 LlamaInferenceEngine::~LlamaInferenceEngine()
 {
+    // Clean up batch allocations
+    for (int i = 0; i < mBatch.n_tokens; ++i) {
+        delete[] mBatch.seq_id[i];
+    }
+    delete[] mBatch.pos;
+    delete[] mBatch.seq_id;
+    delete[] mBatch.logits;
+
+    llama_batch_free(mBatch); // Just in case
     llama_backend_free();
 }
 
@@ -65,7 +74,7 @@ bool LlamaInferenceEngine::init(const std::string& aModelPath, const std::string
     int32_t embd        = 0;      // ← must be zero for token inference
     int32_t n_seq_max   = 1;      // e.g. single sequence context
 
-    llama_batch batch = llama_batch_init(n_tokens, embd, n_seq_max);
+    mBatch = llama_batch_init(n_tokens, embd, n_seq_max);
 
     LOGD << "LlaMa Inference Engine initialized successfully!"; 
     
@@ -74,6 +83,7 @@ bool LlamaInferenceEngine::init(const std::string& aModelPath, const std::string
 
 std::string LlamaInferenceEngine::generate(const std::string& aPrompt)
 {
+    std::lock_guard<std::mutex> lock(mMutex); 
     setGeneratingResponse(true); 
     LOGD << "Receieved a prompt to input to model!"; 
     std::string fullPrompt = mPromptHeader + aPrompt; 
@@ -94,78 +104,84 @@ std::string LlamaInferenceEngine::generate(const std::string& aPrompt)
     return fullResponse.str(); 
 }
 
-void LlamaInferenceEngine::startCompletion(const std::string& query) 
-{
+void LlamaInferenceEngine::startCompletion(const std::string& query) {
     addPrompt(query, "user");
 
-    // apply the chat-template
     const char* tmpl = llama_model_chat_template(mModel, nullptr);
     int newLen = llama_chat_apply_template(tmpl, mMessages.data(), mMessages.size(), true,
                                            mFormattedMessages.data(), mFormattedMessages.size());
 
-    if (newLen > static_cast<int>(mFormattedMessages.size())) 
-    {
-        // resize the output buffer `_formattedMessages`
-        // and re-apply the chat template
+    if (newLen > static_cast<int>(mFormattedMessages.size())) {
         mFormattedMessages.resize(newLen);
         newLen = llama_chat_apply_template(tmpl, mMessages.data(), mMessages.size(), true,
                                            mFormattedMessages.data(), mFormattedMessages.size());
     }
 
-    if (newLen < 0) {
-        throw std::runtime_error("llama_chat_apply_template() in "
-                                 "LLMInference::start_completion() failed");
-    }
-
     std::string prompt(mFormattedMessages.begin() + mPrevLen, mFormattedMessages.begin() + newLen);
     mPromptTokens = common_tokenize(llama_model_get_vocab(mModel), prompt, true, true);
+    int N = mPromptTokens.size();
 
-    // create a llama_batch containing a single sequence
-    // see llama_batch_init for more details
-    mBatch.token    = mPromptTokens.data();
-    mBatch.embd = 0; 
-    mBatch.n_tokens = mPromptTokens.size();
-}
+    // Resize internal vectors
+    mPos.resize(N);
+    mSeqId.resize(N);
+    mLogits.resize(N);
 
-std::string LlamaInferenceEngine::completionLoop() {
-    // check if the length of the inputs to the model
-    // have exceeded the context size of the model
-    int contextSize = llama_n_ctx(mContext);
-    int nCtxUsed    = llama_get_kv_cache_used_cells(mContext);
-    if (nCtxUsed + mBatch.n_tokens > contextSize) {
-        LOGE << "context size exceeded"; 
-        exit(0);
+    for (int i = 0; i < N; ++i) {
+        mPos[i] = 0;
+        mSeqId[i] = new int[1]{0};  // sequence ID 0
+        mLogits[i] = false;
     }
 
-    assert(mContext != nullptr);
-    assert(mBatch.n_tokens > 0);
+    mBatch.token = mPromptTokens.data();
+    mBatch.pos = mPos.data();
+    mBatch.seq_id = mSeqId.data();
+    mBatch.logits = mLogits.data();
+    mBatch.n_tokens = N;
+    mBatch.embd = 0;
+}
 
-    // run the model
+
+
+std::string LlamaInferenceEngine::completionLoop() 
+{
+    LOGD << "completion loop"; 
+    if (llama_get_kv_cache_used_cells(mContext) + mBatch.n_tokens > llama_n_ctx(mContext)) {
+        throw std::runtime_error("Context exceeded");
+    }
+
     if (llama_decode(mContext, mBatch) < 0) {
         throw std::runtime_error("llama_decode() failed");
     }
 
-    // sample a token and check if it is an EOG (end of generation token)
-    // convert the integer token to its corresponding word-piece
     mCurrToken = llama_sampler_sample(mSampler, mContext, -1);
-
-    if (llama_vocab_is_eog(llama_model_get_vocab(mModel), mCurrToken)) 
-    {
+    if (llama_vocab_is_eog(llama_model_get_vocab(mModel), mCurrToken)) {
         addPrompt(strdup(mResponse.data()), "assistant");
         mResponse.clear();
         return "[EOG]";
     }
+
     std::string piece = common_token_to_piece(mContext, mCurrToken, true);
     mResponse += piece;
 
-    // re-init the batch with the newly predicted token
-    // key, value pairs of all previous tokens have been cached
-    // in the KV cache
-    mBatch.token    = &mCurrToken;
+    // Reuse the vectors safely for next token
+    mPromptTokens = { mCurrToken };
+    mPos = { llama_get_kv_cache_used_cells(mContext) };  // or 0
+    mLogits = { false };
+
+    int* id = new int[1]{0};
+    if (!mSeqId.empty()) delete[] mSeqId[0];
+    mSeqId = { id };
+
+    mBatch.token = mPromptTokens.data();
+    mBatch.pos = mPos.data();
+    mBatch.seq_id = mSeqId.data();
+    mBatch.logits = mLogits.data();
     mBatch.n_tokens = 1;
+    mBatch.embd = 0;
 
     return piece;
 }
+
 
 void LlamaInferenceEngine::addPrompt(const std::string& message, const std::string& role) 
 {

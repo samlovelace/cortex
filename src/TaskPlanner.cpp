@@ -56,4 +56,5 @@ bool TaskPlanner::plan(const std::string& aCommand)
         mValidator->validate(taskPlan); 
     }
 
+    return mValidator->validPlanGenerated(); 
 }

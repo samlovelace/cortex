@@ -7,6 +7,7 @@
 #include "TaskPlanner.h"
 #include "llama.h"
 
+#include "EngineFactory.hpp"
 
 int main()
 {

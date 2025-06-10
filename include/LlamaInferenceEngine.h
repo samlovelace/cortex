@@ -25,6 +25,13 @@ private:
     llama_sampler* mSampler;
     llama_batch mBatch;
     llama_token mCurrToken;
+    std::vector<llama_token> mStablePromptTokens;
+
+    std::vector<int> mPos;
+    std::vector<int*> mSeqId;
+    std::vector<int8_t> mLogits;
+
+    std::mutex mMutex; 
 
     // stores the complete response for the given query
     std::string mResponse = "";
