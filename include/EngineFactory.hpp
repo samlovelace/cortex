@@ -3,6 +3,7 @@
  
 #include "InferenceEngine.hpp"
 #include "LlamaInferenceEngine.h"
+#include "LlamaPyInferenceEngine.h"
 #include "plog/Log.h"
  
 class EngineFactory 
@@ -17,6 +18,10 @@ public:
         {
             LOGD << "Using LLaMa.cpp Inference Engine"; 
             return std::make_shared<LlamaInferenceEngine>(); 
+        }
+        else if("llama-py" == anEngineType)
+        {
+            return std::make_shared<LlamaPyInferenceEngine>(); 
         }
         else{
             LOGE << "Unsupported Inference Engine type: " << anEngineType;

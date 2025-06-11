@@ -13,12 +13,15 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(pybind11 CONFIG REQUIRED)
 
 add_subdirectory(dependencies/llama-cpp)
 
 set(SOURCES
   ${CMAKE_CURRENT_LIST_DIR}/src/CommandHandler.cpp
   ${CMAKE_CURRENT_LIST_DIR}/src/LlamaInferenceEngine.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/src/LlamaPyInferenceEngine.cpp
   ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
   ${CMAKE_CURRENT_LIST_DIR}/src/PlanValidator.cpp
   ${CMAKE_CURRENT_LIST_DIR}/src/TaskPlanner.cpp
@@ -35,6 +38,8 @@ target_link_libraries(${PROJECT_NAME}
   common 
   llama 
   ggml
+  pybind11::embed
+  Python3::Python
 )
 
 include_directories(${PROJECT_NAME} 

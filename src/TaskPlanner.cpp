@@ -52,7 +52,12 @@ bool TaskPlanner::plan(const std::string& aCommand)
 
     while(!mValidator->validPlanGenerated() && numPlanningAttempts++ < mMaxPlanningAttempts)
     {
+        auto start = std::chrono::steady_clock::now(); 
         taskPlan = mInferenceEngine->generate(aCommand); 
+        auto end = std::chrono::steady_clock::now(); 
+        LOGD << "Generated Task Plan in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms"; 
+
+        LOGD << "Validating Task Plan..."; 
         mValidator->validate(taskPlan); 
     }
 
