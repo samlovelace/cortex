@@ -9,7 +9,6 @@
 
 #include "ConcurrentQueue.hpp"
 
-
 int main()
 {
     createLogger(); 

@@ -1,4 +1,4 @@
-engine: llama-cpp
+engine: llama-py
 path: /home/sam/models
 model: Mistral-7B-Instruct-v0.3.Q3_K_M.gguf
 maxPlanningAttempts: 3
