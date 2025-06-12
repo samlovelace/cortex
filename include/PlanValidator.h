@@ -10,6 +10,7 @@ public:
     ~PlanValidator();
 
     void validate(const std::string& aPlan); 
+    void reset(); 
     bool validPlanGenerated() {return mValidPlanGenerated;}
 
 private:

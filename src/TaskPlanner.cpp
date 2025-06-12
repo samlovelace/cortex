@@ -4,7 +4,8 @@
 #include "plog/Log.h" 
 #include "EngineFactory.hpp"
 
-TaskPlanner::TaskPlanner() : mInferenceEngine(nullptr), mValidator(std::make_shared<PlanValidator>()), mMaxPlanningAttempts(3)
+TaskPlanner::TaskPlanner(std::shared_ptr<ConcurrentQueue<std::string>> aPromptQueue) : 
+    mPromptQueue(aPromptQueue), mInferenceEngine(nullptr), mValidator(std::make_shared<PlanValidator>()), mMaxPlanningAttempts(3)
 {
     std::string engineType; 
     if(!ConfigManager::get().getConfig("engine", engineType))
@@ -45,6 +46,19 @@ TaskPlanner::~TaskPlanner()
 
 }
 
+void TaskPlanner::run()
+{
+    while(true)
+    {
+        std::string prompt; 
+        if(mPromptQueue->pop(prompt))
+        {
+            LOGD << "Prompt popped from queue!"; 
+            plan(prompt); 
+        }
+    }
+}
+
 bool TaskPlanner::plan(const std::string& aCommand)
 {
     std::string taskPlan = ""; 
@@ -53,13 +67,15 @@ bool TaskPlanner::plan(const std::string& aCommand)
     while(!mValidator->validPlanGenerated() && numPlanningAttempts++ < mMaxPlanningAttempts)
     {
         auto start = std::chrono::steady_clock::now(); 
-        taskPlan = mInferenceEngine->generate(aCommand); 
+        taskPlan = mInferenceEngine->generate(aCommand);
         auto end = std::chrono::steady_clock::now(); 
-        LOGD << "Generated Task Plan in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms"; 
-
-        LOGD << "Validating Task Plan..."; 
+        LOGD << "Task Plan: " << taskPlan; 
+        LOGD << "Generated task plan in " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " secs"; 
+        LOGD << "Validating task plan...";  
         mValidator->validate(taskPlan); 
     }
 
-    return mValidator->validPlanGenerated(); 
+    LOGD << "Valid task plan generated!"; 
+    mValidator->reset(); 
+    return true; 
 }

@@ -20,3 +20,8 @@ void PlanValidator::validate(const std::string& aPlan)
     // check that only primitive actions are used 
 
 }
+
+void PlanValidator::reset()
+{
+    mValidPlanGenerated = false;
+}

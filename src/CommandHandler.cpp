@@ -2,7 +2,7 @@
 #include "CommandHandler.h"
 #include "plog/Log.h"
 
-CommandHandler::CommandHandler(std::shared_ptr<TaskPlanner> aPlanner) : mPlanner(aPlanner)
+CommandHandler::CommandHandler(std::shared_ptr<ConcurrentQueue<std::string>> aPromptQueue) : mPromptQueue(aPromptQueue)
 {
 
 }
@@ -27,11 +27,7 @@ bool CommandHandler::init()
 
 void CommandHandler::promptCallback(const std_msgs::msg::String::SharedPtr aMsg)
 {
-    // TODO: maybe i need something like this in the future ? 
-    // if(mPlanner->isPlanning())
-    // {
-    //     return ; 
-    // }
-
-    mPlanner->plan(aMsg->data); 
+    // push the prompt to the task planning queue
+    mPromptQueue->push(aMsg->data); 
+    LOGD << "Pushed prompt to the queue for processing!"; 
 }

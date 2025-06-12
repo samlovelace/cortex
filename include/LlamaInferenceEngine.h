@@ -33,6 +33,13 @@ private:
 
     std::mutex mMutex; 
 
+    int mMaxTokens;
+    std::vector<llama_seq_id> mSeqIdBacking;
+    std::vector<llama_seq_id*> mSeqIdPtrs;
+    std::vector<int8_t> mLogitsArray;
+    int* mNSlots = nullptr;
+
+
     // stores the complete response for the given query
     std::string mResponse = "";
     
