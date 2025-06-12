@@ -187,10 +187,10 @@ std::string LlamaInferenceEngine::completionLoop() {
     int contextSize = llama_n_ctx(mContext);
     int nCtxUsed    = llama_get_kv_cache_used_cells(mContext);  // use deprecated for now
 
-    if (nCtxUsed + mBatch.n_tokens > contextSize) {
-        LOGE << "Context size exceeded! Aborting generation.";
-        throw std::runtime_error("Context size exceeded");
-    }
+    // if (nCtxUsed + mBatch.n_tokens > contextSize) {
+    //     LOGE << "Context size exceeded! Aborting generation.";
+    //     throw std::runtime_error("Context size exceeded");
+    // }
 
     assert(mContext != nullptr);
     assert(mBatch.n_tokens > 0);
