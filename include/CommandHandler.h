@@ -6,12 +6,13 @@
 #include "RosTopicManager.hpp"
 #include "InferenceEngine.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "TaskPlanner.h"
+#include "ConcurrentQueue.hpp"
+#include <string> 
  
 class CommandHandler 
 { 
 public:
-    CommandHandler(std::shared_ptr<TaskPlanner> aPlanner);
+    CommandHandler(std::shared_ptr<ConcurrentQueue<std::string>> aPromptQueue);
     ~CommandHandler();
 
     bool init(); 
@@ -19,7 +20,7 @@ public:
 
 private:
 
-    std::shared_ptr<TaskPlanner> mPlanner; 
+    std::shared_ptr<ConcurrentQueue<std::string>> mPromptQueue; 
    
 };
 #endif //COMMANDHANDLER_H

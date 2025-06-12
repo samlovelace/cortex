@@ -7,6 +7,8 @@
 #include "TaskPlanner.h"
 #include "llama.h"
 
+#include "ConcurrentQueue.hpp"
+
 
 int main()
 {
@@ -17,14 +19,13 @@ int main()
 
     ConfigManager::get().load(configPath); 
 
-    auto planner = std::make_shared<TaskPlanner>(); 
-    auto ch = CommandHandler(planner); 
+    std::shared_ptr<ConcurrentQueue<std::string>> promptQueue = std::make_shared<ConcurrentQueue<std::string>>();  
+    
+    auto planner = std::make_shared<TaskPlanner>(promptQueue); 
+    auto ch = CommandHandler(promptQueue); 
+    
     ch.init(); 
-
-    while(true)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000)); 
-    }
+    planner->run(); 
 
     rclcpp::shutdown(); 
 }

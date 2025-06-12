@@ -1,6 +1,6 @@
 engine: llama-cpp
 path: /home/sam/models
-model: tinyllama-1.1b-chat-v1.0.Q5_K_M.gguf
+model: Mistral-7B-Instruct-v0.3.Q3_K_M.gguf
 maxPlanningAttempts: 3
 
 primitiveActions:
