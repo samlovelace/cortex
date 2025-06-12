@@ -22,7 +22,9 @@ LlamaInferenceEngine::~LlamaInferenceEngine()
     delete[] mBatch.seq_id;
     delete[] mBatch.logits;
     delete[] mBatch.n_seq_id;
-  
+
+
+
     llama_backend_free();
 }
 
@@ -91,7 +93,6 @@ bool LlamaInferenceEngine::init(const std::string& aModelPath, const std::string
 
 std::string LlamaInferenceEngine::generate(const std::string& aPrompt)
 {
-    std::lock_guard<std::mutex> lock(mMutex); 
     setGeneratingResponse(true); 
     LOGD << "Receieved a prompt to input to model!"; 
     std::string fullPrompt = mPromptHeader + aPrompt; 
@@ -112,7 +113,8 @@ std::string LlamaInferenceEngine::generate(const std::string& aPrompt)
     return fullResponse.str(); 
 }
 
-void LlamaInferenceEngine::startCompletion(const std::string& query) {
+void LlamaInferenceEngine::startCompletion(const std::string& query) 
+{
     addPrompt(query, "user");
 
     // Get the model's chat template
@@ -190,22 +192,8 @@ std::string LlamaInferenceEngine::completionLoop() {
         throw std::runtime_error("Context size exceeded");
     }
 
-    mBatch.token = mPromptTokens.data();
-    mBatch.pos = mPos.data();
-    mBatch.seq_id = mSeqId.data();
-    mBatch.logits = mLogits.data();
-    mBatch.n_tokens = N;
-    mBatch.embd = 0;
-}
-
-
-
-std::string LlamaInferenceEngine::completionLoop() 
-{
-    LOGD << "completion loop"; 
-    if (llama_get_kv_cache_used_cells(mContext) + mBatch.n_tokens > llama_n_ctx(mContext)) {
-        throw std::runtime_error("Context exceeded");
-    }
+    assert(mContext != nullptr);
+    assert(mBatch.n_tokens > 0);
 
     if (llama_decode(mContext, mBatch) < 0) {
         throw std::runtime_error("llama_decode() failed");
@@ -213,7 +201,7 @@ std::string LlamaInferenceEngine::completionLoop()
 
     // Sample a token from the model
     mCurrToken = llama_sampler_sample(mSampler, mContext, -1);
-  
+
     if (llama_vocab_is_eog(llama_model_get_vocab(mModel), mCurrToken)) {
         addPrompt(strdup(mResponse.data()), "assistant");
         mResponse.clear();
@@ -234,6 +222,8 @@ std::string LlamaInferenceEngine::completionLoop()
 
     return piece;
 }
+
+
 
 void LlamaInferenceEngine::addPrompt(const std::string& message, const std::string& role) 
 {
